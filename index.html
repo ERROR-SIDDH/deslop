@@ -1,0 +1,567 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>deslop docs</title>
+<meta name="description" content="Documentation for deslop, a Claude Code skill that turns AI-generated websites into MNC-grade design.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* Tokens: node deslop/scripts/derive-palette.mjs none B (all contrast checks pass) */
+:root {
+  --background: #ffffff; --foreground: #121212;
+  --card: #ffffff; --muted: #f4f4f4; --muted-foreground: #5d5d5d;
+  --border: #e7e7e7; --input: #d5d5d5;
+  --primary: #121212; --primary-foreground: #ffffff; --primary-hover: #2e2e2e;
+  --accent: #e9e9e9; --ring: #121212; --brand: #5460b3;
+  --code-bg: #fafafa;
+  --radius-sm: 6px; --radius-md: 8px; --radius-lg: 12px;
+  --shadow-md: 0 1px 1px rgba(0,0,0,.02), 0 4px 8px -4px rgba(0,0,0,.04), 0 16px 24px -8px rgba(0,0,0,.06);
+  --ease: cubic-bezier(0.2, 0, 0.38, 0.9);
+  --header: 56px;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not(.light) {
+    --background: #0a0a0a; --foreground: #e8e8e8;
+    --card: #121212; --muted: #1e1e1e; --muted-foreground: #a4a4a4;
+    --border: #262626; --input: #333333;
+    --primary: #e8e8e8; --primary-foreground: #0a0a0a; --primary-hover: #d1d1d1;
+    --accent: #282828; --ring: #e8e8e8; --brand: #919fe6;
+    --code-bg: #121212;
+    color-scheme: dark;
+  }
+}
+:root.dark {
+  --background: #0a0a0a; --foreground: #e8e8e8;
+  --card: #121212; --muted: #1e1e1e; --muted-foreground: #a4a4a4;
+  --border: #262626; --input: #333333;
+  --primary: #e8e8e8; --primary-foreground: #0a0a0a; --primary-hover: #d1d1d1;
+  --accent: #282828; --ring: #e8e8e8; --brand: #919fe6;
+  --code-bg: #121212;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { scroll-padding-top: calc(var(--header) + 24px); -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--background); color: var(--foreground);
+  font: 400 16px/1.65 Geist, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
+}
+a { color: var(--brand); text-decoration: none; text-underline-offset: 3px; }
+a:hover { text-decoration: underline; }
+:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; border-radius: 4px; }
+code, pre, kbd { font-family: "Geist Mono", ui-monospace, monospace; }
+img { max-width: 100%; display: block; }
+
+/* Header */
+.header {
+  position: sticky; top: 0; z-index: 20; height: var(--header);
+  display: flex; align-items: center; gap: 16px; padding: 0 24px;
+  background: color-mix(in srgb, var(--background) 85%, transparent);
+  backdrop-filter: blur(8px); border-bottom: 1px solid var(--border);
+}
+.brand { display: flex; align-items: center; gap: 10px; color: var(--foreground); font-weight: 600; letter-spacing: -0.01em; }
+.brand:hover { text-decoration: none; }
+.brand-mark { width: 22px; height: 22px; border-radius: 6px; background: var(--foreground); display: grid; place-items: center; }
+.brand-mark span { width: 8px; height: 8px; border-radius: 2px; background: var(--background); }
+.brand small { font-weight: 400; color: var(--muted-foreground); font-size: 14px; }
+.header-spacer { flex: 1; }
+.icon-btn, .menu-btn {
+  height: 36px; min-width: 36px; padding: 0 10px; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--background);
+  color: var(--foreground); font: 500 14px/1 Geist, sans-serif; cursor: pointer;
+  transition: background-color 120ms var(--ease);
+}
+.icon-btn:hover, .menu-btn:hover { background: var(--muted); text-decoration: none; }
+.icon-btn:active, .menu-btn:active { background: var(--accent); }
+.icon-btn svg, .menu-btn svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 1.5; }
+.menu-btn { display: none; }
+
+/* Layout */
+.layout { display: grid; grid-template-columns: 260px minmax(0, 1fr) 220px; max-width: 1440px; margin: 0 auto; }
+.sidebar, .toc { position: sticky; top: var(--header); height: calc(100vh - var(--header)); overflow-y: auto; }
+.sidebar { border-right: 1px solid var(--border); padding: 24px 12px 48px; }
+.nav-group { margin-bottom: 24px; }
+.nav-group h4 { margin: 0 0 6px; padding: 0 12px; font-size: 12px; font-weight: 500; color: var(--muted-foreground); letter-spacing: 0.01em; }
+.nav-group a {
+  display: block; padding: 6px 12px; border-radius: var(--radius-sm); color: var(--muted-foreground);
+  font-size: 14px; line-height: 20px; position: relative; transition: background-color 120ms var(--ease), color 120ms var(--ease);
+}
+.nav-group a:hover { background: var(--muted); color: var(--foreground); text-decoration: none; }
+.nav-group a.active { background: var(--muted); color: var(--foreground); font-weight: 500; }
+.nav-group a.active::before { content: ""; position: absolute; left: 0; top: 6px; bottom: 6px; width: 2px; border-radius: 2px; background: var(--foreground); }
+
+.content { padding: 48px 64px 96px; min-width: 0; }
+.article { max-width: 760px; margin: 0 auto; }
+.toc { padding: 48px 24px 48px 0; }
+.toc h4 { margin: 0 0 12px; font-size: 12px; font-weight: 500; color: var(--muted-foreground); }
+.toc a { display: block; padding: 4px 0 4px 12px; border-left: 1px solid var(--border); color: var(--muted-foreground); font-size: 13px; line-height: 18px; }
+.toc a:hover { color: var(--foreground); text-decoration: none; }
+.toc a.active { color: var(--foreground); border-left-color: var(--foreground); }
+
+/* Typography */
+.eyebrow-link { font-size: 14px; color: var(--muted-foreground); }
+h1 { font-size: 40px; line-height: 48px; font-weight: 600; letter-spacing: -0.03em; margin: 8px 0 16px; }
+.lead { font-size: 18px; line-height: 30px; color: var(--muted-foreground); margin: 0 0 32px; max-width: 62ch; }
+h2 { font-size: 26px; line-height: 34px; font-weight: 600; letter-spacing: -0.02em; margin: 72px 0 16px; padding-top: 32px; border-top: 1px solid var(--border); }
+h3 { font-size: 18px; line-height: 28px; font-weight: 600; letter-spacing: -0.01em; margin: 40px 0 8px; }
+p, li { max-width: 68ch; }
+p { margin: 0 0 16px; }
+ul, ol { padding-left: 20px; margin: 0 0 16px; }
+li { margin: 4px 0; }
+li::marker { color: var(--muted-foreground); }
+strong { font-weight: 600; }
+:not(pre) > code { font-size: 0.875em; padding: 2px 6px; border-radius: 4px; background: var(--muted); border: 1px solid var(--border); }
+.muted { color: var(--muted-foreground); }
+
+/* Code blocks */
+.code { position: relative; margin: 16px 0 24px; border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--code-bg); }
+.code-head { display: flex; align-items: center; justify-content: space-between; height: 40px; padding: 0 8px 0 16px; border-bottom: 1px solid var(--border); font-size: 12px; color: var(--muted-foreground); }
+.code pre { margin: 0; padding: 16px; overflow-x: auto; font-size: 13px; line-height: 22px; }
+.copy { height: 28px; padding: 0 10px; border: 1px solid transparent; border-radius: var(--radius-sm); background: transparent; color: var(--muted-foreground); font: 500 12px/1 Geist, sans-serif; cursor: pointer; transition: background-color 120ms var(--ease), color 120ms var(--ease); }
+.copy:hover { background: var(--muted); color: var(--foreground); }
+.copy:active { background: var(--accent); }
+.tok-c { color: var(--muted-foreground); }
+
+/* Tables */
+.table-wrap { margin: 16px 0 24px; border: 1px solid var(--border); border-radius: var(--radius-lg); overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; line-height: 20px; }
+th { text-align: left; font-weight: 500; font-size: 12px; color: var(--muted-foreground); background: var(--code-bg); padding: 10px 16px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+td { padding: 12px 16px; border-bottom: 1px solid var(--border); vertical-align: top; }
+tr:last-child td { border-bottom: 0; }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+tr.hl td { background: var(--muted); }
+
+/* Callout */
+.callout { display: flex; gap: 12px; margin: 24px 0; padding: 16px; border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--code-bg); font-size: 15px; line-height: 24px; }
+.callout svg { flex: none; width: 18px; height: 18px; margin-top: 3px; stroke: var(--muted-foreground); fill: none; stroke-width: 1.5; }
+.callout p { margin: 0; }
+
+/* Cards (clickable only) */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 24px 0; }
+.link-card { display: block; padding: 16px 20px; border: 1px solid var(--border); border-radius: var(--radius-lg); color: var(--foreground); transition: border-color 120ms var(--ease); }
+.link-card:hover { border-color: var(--input); text-decoration: none; }
+.link-card strong { display: block; font-size: 15px; margin-bottom: 2px; }
+.link-card span { font-size: 14px; line-height: 20px; color: var(--muted-foreground); }
+
+/* Steps */
+.steps { list-style: none; padding: 0; counter-reset: s; margin: 24px 0; }
+.steps > li { counter-increment: s; position: relative; padding: 0 0 24px 44px; max-width: none; }
+.steps > li::before { content: counter(s, decimal-leading-zero); position: absolute; left: 0; top: 1px; font: 500 13px/24px "Geist Mono", monospace; color: var(--muted-foreground); }
+.steps > li::after { content: ""; position: absolute; left: 9px; top: 32px; bottom: 6px; width: 1px; background: var(--border); }
+.steps > li:last-child::after { display: none; }
+.steps strong { display: block; }
+
+/* Figures */
+.compare { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; margin: 24px 0 8px; }
+figure { margin: 0; }
+.shot { border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; background: var(--muted); }
+.shot img { width: 100%; height: auto; }
+figcaption { margin-top: 8px; font-size: 13px; color: var(--muted-foreground); }
+figcaption b { color: var(--foreground); font-weight: 500; }
+.figure-wide { margin: 24px 0; }
+
+/* Stat row */
+.stats { display: grid; grid-template-columns: repeat(4, 1fr); margin: 24px 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.stat { padding: 16px 16px 16px 0; }
+.stat + .stat { padding-left: 16px; border-left: 1px solid var(--border); }
+.stat .label { font-size: 12px; font-weight: 500; color: var(--muted-foreground); }
+.stat .value { font-size: 24px; line-height: 32px; font-weight: 600; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+.stat .delta { font-size: 13px; color: var(--muted-foreground); font-variant-numeric: tabular-nums; }
+
+.footer { margin-top: 96px; padding-top: 24px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; font-size: 14px; color: var(--muted-foreground); }
+
+/* Responsive */
+@media (max-width: 1200px) { .layout { grid-template-columns: 240px minmax(0, 1fr); } .toc { display: none; } .content { padding: 40px 48px 80px; } }
+@media (max-width: 860px) {
+  .layout { grid-template-columns: minmax(0, 1fr); }
+  .menu-btn { display: inline-flex; }
+  .icon-btn span { display: none; }
+  .sidebar { display: none; position: fixed; inset: var(--header) 0 0 0; height: auto; z-index: 15; background: var(--background); border-right: 0; }
+  body.nav-open .sidebar { display: block; }
+  .content { padding: 32px 16px 64px; }
+  h1 { font-size: 32px; line-height: 40px; }
+  .compare, .grid-2 { grid-template-columns: minmax(0, 1fr); }
+  .stats { grid-template-columns: 1fr 1fr; }
+  .stat:nth-child(3) { padding-left: 0; border-left: 0; }
+  .header { padding: 0 16px; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; scroll-behavior: auto !important; } }
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <button class="menu-btn" aria-label="Open navigation" aria-expanded="false" id="menu">
+    <svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+  </button>
+  <a class="brand" href="#overview"><span class="brand-mark"><span></span></span>deslop <small>Docs</small></a>
+  <div class="header-spacer"></div>
+  <button class="icon-btn" id="theme" aria-label="Toggle colour theme" title="Toggle theme">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 4v16" /><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor" stroke="none"/></svg>
+  </button>
+  <a class="icon-btn" href="https://github.com/ERROR-SIDDH/deslop" aria-label="View on GitHub">
+    <svg viewBox="0 0 24 24"><path d="M9 19c-4.3 1.4-4.3-2.5-6-3m12 5v-3.5c0-1 .1-1.4-.5-2 2.8-.3 5.5-1.4 5.5-6a4.6 4.6 0 0 0-1.3-3.2 4.2 4.2 0 0 0-.1-3.2s-1.1-.3-3.5 1.3a12.3 12.3 0 0 0-6.2 0C6.5 2.8 5.4 3.1 5.4 3.1a4.2 4.2 0 0 0-.1 3.2A4.6 4.6 0 0 0 4 9.5c0 4.6 2.7 5.7 5.5 6-.6.6-.6 1.2-.5 2V21"/></svg>
+    <span>GitHub</span>
+  </a>
+</header>
+
+<div class="layout">
+  <nav class="sidebar" aria-label="Documentation">
+    <div class="nav-group">
+      <h4>Get started</h4>
+      <a href="#overview">Overview</a>
+      <a href="#install">Install</a>
+      <a href="#usage">Usage</a>
+    </div>
+    <div class="nav-group">
+      <h4>Concepts</h4>
+      <a href="#finding">The core finding</a>
+      <a href="#styles">House styles</a>
+      <a href="#workflow">How it works</a>
+    </div>
+    <div class="nav-group">
+      <h4>Tools</h4>
+      <a href="#scanner">Static scanner</a>
+      <a href="#palette">Palette generator</a>
+      <a href="#audit">Live audit</a>
+    </div>
+    <div class="nav-group">
+      <h4>Demos</h4>
+      <a href="#demo-marketing">Marketing page</a>
+      <a href="#demo-brand">Brand colour kept</a>
+      <a href="#demo-app">App dashboard</a>
+    </div>
+    <div class="nav-group">
+      <h4>Reference</h4>
+      <a href="#structure">Repository layout</a>
+      <a href="#testing">How it was tested</a>
+      <a href="#limits">Limits</a>
+    </div>
+  </nav>
+
+  <main class="content">
+    <article class="article">
+
+      <section id="overview">
+        <span class="eyebrow-link">Claude Code skill</span>
+        <h1>deslop</h1>
+        <p class="lead">Turn AI-generated websites into design that holds up next to Stripe, Linear and IBM. deslop audits a page, picks one design direction and ports colour, type, components, radius, motion and copy to an enterprise standard.</p>
+
+        <div class="compare">
+          <figure>
+            <div class="shot"><img src="docs/screenshots/marketing-before-hero.png" alt="AI-generated landing page with purple gradients, glowing buttons and a sparkle badge" loading="lazy"></div>
+            <figcaption><b>Before.</b> Typical AI-builder output. Slop score 93.</figcaption>
+          </figure>
+          <figure>
+            <div class="shot"><img src="docs/screenshots/marketing-after-hero.png" alt="The same page after deslop: neutral dark palette, left-aligned hero, product figure" loading="lazy"></div>
+            <figcaption><b>After.</b> Ported by an agent using only this skill. Score 10.</figcaption>
+          </figure>
+        </div>
+
+        <div class="grid-2">
+          <a class="link-card" href="#install"><strong>Install</strong><span>Add the skill to Claude Code in one copy command.</span></a>
+          <a class="link-card" href="#demo-marketing"><strong>See the demos</strong><span>Three before-and-after ports, with measurements.</span></a>
+        </div>
+      </section>
+
+      <section id="install">
+        <h2>Install</h2>
+        <p>You need <a href="https://claude.com/claude-code">Claude Code</a> and Node.js 18 or later for the helper scripts. Copy the <code>deslop</code> folder into your skills directory.</p>
+
+        <h3>macOS and Linux</h3>
+        <div class="code"><div class="code-head"><span>bash</span><button class="copy">Copy</button></div><pre><code>git clone https://github.com/ERROR-SIDDH/deslop.git
+mkdir -p ~/.claude/skills
+cp -r deslop/deslop ~/.claude/skills/deslop</code></pre></div>
+
+        <h3>Windows</h3>
+        <div class="code"><div class="code-head"><span>PowerShell</span><button class="copy">Copy</button></div><pre><code>git clone https://github.com/ERROR-SIDDH/deslop.git
+New-Item -ItemType Directory -Force "$HOME\.claude\skills" | Out-Null
+Copy-Item -Recurse deslop\deslop "$HOME\.claude\skills\deslop"</code></pre></div>
+
+        <h3>For one project only</h3>
+        <p>Copy the folder to <code>.claude/skills/deslop</code> inside that repository and commit it. Everyone on the team gets the skill.</p>
+
+        <div class="callout">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>
+          <p>Skills load when a session starts. Open a new Claude Code session, then type <code>/deslop</code> to confirm it is there. To update, <code>git pull</code> and copy the folder again.</p>
+        </div>
+      </section>
+
+      <section id="usage">
+        <h2>Usage</h2>
+        <p>Open Claude Code in the project you want to fix. Run <code>/deslop</code>, or describe the problem. The skill also triggers on phrases like “this looks AI-generated”, “too purple” or “make it look enterprise”.</p>
+
+        <div class="code"><div class="code-head"><span>Prompt</span><button class="copy">Copy</button></div><pre><code>/deslop our landing page in src/app/page.tsx.
+Brand colour is #6366F1 and must stay. We sell to enterprise IT teams.</code></pre></div>
+
+        <h3>What to tell it</h3>
+        <p>deslop never invents customers, numbers or claims. The more facts you give it, the sharper the result.</p>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Give it</th><th>So that it can</th></tr></thead>
+          <tbody>
+            <tr><td>Your brand colour, and whether it must stay</td><td>Keep the hue and discipline it, instead of replacing it</td></tr>
+            <tr><td>How the product is bought</td><td>Choose the house style: Enterprise, Product-mono or Editorial</td></tr>
+            <tr><td>Which stats and testimonials are real</td><td>Keep those, and remove or flag the rest</td></tr>
+            <tr><td>Marketing page or app screen</td><td>Use the right type scale and component patterns</td></tr>
+            <tr><td>A URL or dev-server port</td><td>Run the live audit and compare screenshots</td></tr>
+          </tbody>
+        </table></div>
+      </section>
+
+      <section id="finding">
+        <h2>The core finding</h2>
+        <p><strong>Blue and purple are not the problem. The treatment is.</strong> We measured live AI-built landing pages against Linear and Stripe with the bundled audit script.</p>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Site</th><th class="num">Slop score</th><th class="num">Blue/violet share</th><th class="num">Gradient text</th><th class="num">Glows</th><th class="num">Library icons</th></tr></thead>
+          <tbody>
+            <tr><td>AI tutor landing (Lovable)</td><td class="num">94</td><td class="num">82%</td><td class="num">10</td><td class="num">17</td><td class="num">30</td></tr>
+            <tr><td>AI sales coach (Lovable)</td><td class="num">74</td><td class="num">93%</td><td class="num">1</td><td class="num">1</td><td class="num">51</td></tr>
+            <tr><td>AI SaaS platform (v0)</td><td class="num">99</td><td class="num">59%</td><td class="num">3</td><td class="num">25</td><td class="num">102</td></tr>
+            <tr class="hl"><td>Linear</td><td class="num">11</td><td class="num">49%</td><td class="num">0</td><td class="num">0</td><td class="num">0</td></tr>
+            <tr class="hl"><td>Stripe</td><td class="num">39</td><td class="num">97%</td><td class="num">0</td><td class="num">3</td><td class="num">0</td></tr>
+          </tbody>
+        </table></div>
+        <p>Stripe is 97% indigo and still reads as premium: no gradient text, 4–6px corners, one licensed typeface, no icon confetti. So deslop removes the tells and imposes a system rather than swapping colours.</p>
+        <div class="callout">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>
+          <p>The classic AI button colours fail accessibility. With white text, Tailwind violet-500 scores 4.23:1, indigo-500 4.47:1 and blue-500 3.68:1, all under the 4.5:1 minimum.</p>
+        </div>
+      </section>
+
+      <section id="styles">
+        <h2>House styles</h2>
+        <p>Every port commits to exactly one style. Mixing them is what makes a page look assembled.</p>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Style</th><th>Feels like</th><th>Chosen when</th><th>Type</th><th>Radius</th></tr></thead>
+          <tbody>
+            <tr><td><strong>A. Enterprise</strong></td><td>IBM, SAP, Atlassian</td><td>Sales-led to IT, finance, regulated industries</td><td>IBM Plex Sans</td><td>4px</td></tr>
+            <tr><td><strong>B. Product-mono</strong></td><td>Linear, Vercel</td><td>Self-serve by any business buyer</td><td>Geist or Inter</td><td>8px</td></tr>
+            <tr><td><strong>C. Editorial</strong></td><td>Stripe, Notion</td><td>Bought by individuals; brand-led</td><td>Brand font or Inter Tight</td><td>6px</td></tr>
+          </tbody>
+        </table></div>
+        <p class="muted">This page is built in Style B, with tokens from the palette generator.</p>
+      </section>
+
+      <section id="workflow">
+        <h2>How it works</h2>
+        <ol class="steps">
+          <li><strong>Audit</strong>The static scanner runs over the source, and the live audit runs on the rendered page. You get a ranked list of the loudest tells.</li>
+          <li><strong>Decide</strong>It picks one house style from how the product is bought, and decides what happens to the brand colour.</li>
+          <li><strong>Port</strong>It works source first: generated tokens, then type, then removing the tells. Then come colour placement, component choice and sizing, the stock sections, and copy.</li>
+          <li><strong>Verify</strong>It re-scans, re-audits and re-screenshots, then runs a 13-point review gate before reporting what changed and what it flagged.</li>
+        </ol>
+        <h3>Rules it enforces</h3>
+        <ul>
+          <li><strong>Colour budget.</strong> 90–96% neutral. Accent only on the primary button, links, focus ring, selected states and one chart series.</li>
+          <li><strong>One primary button per view</strong>, three text levels, at most three surface levels.</li>
+          <li><strong>Least decorated object.</strong> Rows before cards, tables for records, an inline stat row instead of stat cards.</li>
+          <li><strong>One radius scale</strong> with four steps. 1px borders. Controls at 32, 36–40 or 44px.</li>
+          <li><strong>Nothing moves on its own.</strong> No glows, glass, blobs or hover lifts.</li>
+        </ul>
+      </section>
+
+      <section id="scanner">
+        <h2>Static scanner</h2>
+        <p><code>slop-scan.mjs</code> reports every tell as <code>file:line</code> with a fix. It covers 29 patterns, including project-wide checks for mixed grey families, multiple accent hues and radius sprawl. It has no dependencies and ignores comments.</p>
+        <div class="code"><div class="code-head"><span>bash</span><button class="copy">Copy</button></div><pre><code>node deslop/scripts/slop-scan.mjs src/
+node deslop/scripts/slop-scan.mjs src/ --json
+node deslop/scripts/slop-scan.mjs --self-test</code></pre></div>
+        <div class="code"><div class="code-head"><span>Output</span></div><pre><code>[!!!] gradient-text x2  ->  Solid foreground headline; never gradient text.
+   src/app/page.tsx:16  bg-clip-text text-transparent
+[!!] multiple-accent-hues x1  ->  One accent hue; everything else neutral.
+   purple + cyan + blue + indigo + pink
+<span class="tok-c">111 tells, weighted 223. Full AI-slop: run the deslop port.</span></code></pre></div>
+      </section>
+
+      <section id="palette">
+        <h2>Palette generator</h2>
+        <p><code>derive-palette.mjs</code> takes one brand colour and a house style, and returns a complete light and dark token set computed in OKLCH. It keeps the hue, caps the chroma so the colour stops looking neon, and deepens the lightness until white text passes 4.5:1. Dark mode is designed separately, not inverted.</p>
+        <div class="code"><div class="code-head"><span>bash</span><button class="copy">Copy</button></div><pre><code>node deslop/scripts/derive-palette.mjs "#8B5CF6" C
+node deslop/scripts/derive-palette.mjs none B --format=oklch
+node deslop/scripts/derive-palette.mjs "#2563EB" A --format=hsl</code></pre></div>
+        <p>It outputs shadcn-compatible variables, plus the tokens the rules need: hover and active states, a subtle selected state, readable status text, chart series and a four-step radius scale. A 28-line contrast report ends the output.</p>
+        <div class="code"><div class="code-head"><span>Output</span></div><pre><code>--primary: #5c39a9;   <span class="tok-c">/* from #8B5CF6, which fails AA with white text */</span>
+<span class="tok-c">/* ok   light primary-foreground on primary: 8.04 (min 4.5) */</span>
+<span class="tok-c">/* ok   dark  muted (hover) visible on card: 1.13 (min 1.05) */</span></code></pre></div>
+      </section>
+
+      <section id="audit">
+        <h2>Live audit</h2>
+        <p>Paste <code>slop-audit.js</code> into the browser console on any rendered page. It is read-only, and returns a score from 0 to 100 with a verdict, plus colour-budget measurements.</p>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Verdict</th><th class="num">Score</th><th>Calibration</th></tr></thead>
+          <tbody>
+            <tr><td>clean</td><td class="num">0–24</td><td>Linear scores 11</td></tr>
+            <tr><td>borderline</td><td class="num">25–49</td><td>Stripe scores 39, because of its deliberate brand accent</td></tr>
+            <tr><td>slop</td><td class="num">50–100</td><td>Lovable and v0 pages score 74–99</td></tr>
+          </tbody>
+        </table></div>
+      </section>
+
+      <section id="demo-marketing">
+        <h2>Demo: marketing page</h2>
+        <p>FlowPilot, a fictional workflow-automation SaaS with no brand constraint. The agent chose <strong>Style B</strong>.</p>
+        <div class="stats">
+          <div class="stat"><div class="label">Slop score</div><div class="value">10</div><div class="delta">from 93</div></div>
+          <div class="stat"><div class="label">Scanner weight</div><div class="value">0</div><div class="delta">from 223</div></div>
+          <div class="stat"><div class="label">Accent area</div><div class="value">0.5%</div><div class="delta">from 13.2%</div></div>
+          <div class="stat"><div class="label">Hue families</div><div class="value">0</div><div class="delta">from 4</div></div>
+        </div>
+        <div class="compare">
+          <figure><div class="shot"><img src="docs/screenshots/marketing-before-full.png" alt="FlowPilot before, full page" loading="lazy"></div><figcaption><b>Before.</b> Gradient headline, glow CTA, glass cards, fake stats. <a href="examples/slop.html">Open page</a></figcaption></figure>
+          <figure><div class="shot"><img src="docs/screenshots/marketing-after-full.png" alt="FlowPilot after, full page" loading="lazy"></div><figcaption><b>After.</b> Neutral palette, product figure, features as a list. <a href="examples/deslopped.html">Open page</a></figcaption></figure>
+        </div>
+      </section>
+
+      <section id="demo-brand">
+        <h2>Demo: brand colour kept</h2>
+        <p>Same page, new brief: the brand colour <code>#8B5CF6</code> must stay, and the product is sold to finance teams through procurement. The agent chose <strong>Style A</strong>. The purple stays, deepened to <code>#7449d2</code>, and appears only on the primary button, link, focus ring and one chart bar.</p>
+        <div class="stats">
+          <div class="stat"><div class="label">Slop score</div><div class="value">2</div><div class="delta">from 93</div></div>
+          <div class="stat"><div class="label">Scanner weight</div><div class="value">0</div><div class="delta">from 223</div></div>
+          <div class="stat"><div class="label">Accent area</div><div class="value">0.9%</div><div class="delta">from 13.2%</div></div>
+          <div class="stat"><div class="label">Hue families</div><div class="value">1</div><div class="delta">the brand purple</div></div>
+        </div>
+        <figure class="figure-wide"><div class="shot"><img src="docs/screenshots/brand-after-hero.png" alt="FlowPilot with brand purple kept, Enterprise style" loading="lazy"></div><figcaption><b>After.</b> IBM Plex at weight 300, 4px corners, “Contact sales” for a procurement buyer. <a href="examples/deslopped-brand.html">Open page</a></figcaption></figure>
+      </section>
+
+      <section id="demo-app">
+        <h2>Demo: app dashboard</h2>
+        <p>InvoiceAI, a fictional self-serve invoicing tool. The before page painted 51% of the screen in accent colour across seven hue families. The agent chose <strong>Style B</strong> and re-chose every component by content.</p>
+        <div class="stats">
+          <div class="stat"><div class="label">Slop score</div><div class="value">2</div><div class="delta">from 74</div></div>
+          <div class="stat"><div class="label">Scanner weight</div><div class="value">0</div><div class="delta">from 219</div></div>
+          <div class="stat"><div class="label">Accent area</div><div class="value">0%</div><div class="delta">from 50.9%</div></div>
+          <div class="stat"><div class="label">Distinct radii</div><div class="value">3</div><div class="delta">one scale</div></div>
+        </div>
+        <figure class="figure-wide"><div class="shot"><img src="docs/screenshots/app-before.png" alt="InvoiceAI dashboard before: gradient sidebar, glass stat cards, gradient pills" loading="lazy"></div><figcaption><b>Before.</b> Gradient sidebar, emoji nav, glass stat cards, gradient status pills. <a href="examples/slop-app.html">Open page</a></figcaption></figure>
+        <div class="compare">
+          <figure><div class="shot"><img src="docs/screenshots/app-v2-after-light.png" alt="InvoiceAI after, light mode" loading="lazy"></div><figcaption><b>After, light.</b> <a href="examples/deslopped-app-v2.html">Open page</a></figcaption></figure>
+          <figure><div class="shot"><img src="docs/screenshots/app-v2-after-dark.png" alt="InvoiceAI after, dark mode" loading="lazy"></div><figcaption><b>After, dark.</b> Follows the system theme with CSS only.</figcaption></figure>
+        </div>
+        <div class="table-wrap"><table>
+          <thead><tr><th>From</th><th>To</th></tr></thead>
+          <tbody>
+            <tr><td>Gradient sidebar with four items</td><td>Top bar with a 2px active indicator</td></tr>
+            <tr><td>Four stat cards with icon tiles</td><td>Inline stat row divided by 1px rules</td></tr>
+            <tr><td>Floating invoice cards</td><td>A table with right-aligned tabular amounts</td></tr>
+            <tr><td>Gradient uppercase status pills</td><td>Neutral badges with a status dot and plain word</td></tr>
+            <tr><td>Gradient upsell tile</td><td>A quiet “Upgrade to Pro” text link</td></tr>
+            <tr><td>“Welcome Back, Alex! 👋”</td><td>Title “Dashboard”, subtitle “Welcome back, Alex.”</td></tr>
+          </tbody>
+        </table></div>
+      </section>
+
+      <section id="structure">
+        <h2>Repository layout</h2>
+        <div class="code"><div class="code-head"><span>Tree</span></div><pre><code>deslop/                     <span class="tok-c">the skill: copy this folder</span>
+├── SKILL.md                <span class="tok-c">workflow, decisions, review gate</span>
+├── references/
+│   ├── slop-catalog.md     <span class="tok-c">the 24 tells, with measurements</span>
+│   ├── mnc-system.md       <span class="tok-c">styles, type, spacing, motion</span>
+│   ├── color.md            <span class="tok-c">budget, whitelist, states, dark mode</span>
+│   ├── components.md       <span class="tok-c">object choice, radius, borders, sizes</span>
+│   └── copy.md             <span class="tok-c">headlines and word swaps</span>
+└── scripts/
+    ├── slop-scan.mjs       <span class="tok-c">static scanner</span>
+    ├── derive-palette.mjs  <span class="tok-c">OKLCH palette generator</span>
+    └── slop-audit.js       <span class="tok-c">live browser audit</span>
+examples/                   <span class="tok-c">before and after demo pages</span>
+docs/screenshots/           <span class="tok-c">images used here</span></code></pre></div>
+      </section>
+
+      <section id="testing">
+        <h2>How it was tested</h2>
+        <ul>
+          <li><strong>Field study.</strong> Live Lovable and v0 pages were measured in a real browser, with Linear and Stripe as calibration.</li>
+          <li><strong>Reference research.</strong> Design tokens and rules from IBM Carbon, GitHub Primer, Vercel Geist, Linear, Atlassian and Stripe.</li>
+          <li><strong>Blind ports.</strong> Four fresh agents, each given only the skill and an AI-made page. Over 30 ambiguities they reported were fixed between runs.</li>
+          <li><strong>Self-tests.</strong> Both Node scripts ship with <code>--self-test</code>. The generator checks every contrast pair for eight brand colours across all three styles.</li>
+        </ul>
+      </section>
+
+      <section id="limits">
+        <h2>Limits</h2>
+        <ul>
+          <li>The scores are heuristics, calibrated on five AI sites and two premium sites. The review gate is the real bar.</li>
+          <li>The scanner reads Tailwind, CSS, HTML and JSX. It cannot judge hierarchy or whether a claim is true.</li>
+          <li>Screenshots and the live audit need a browser. Without one, the skill relies on the scan and the review gate.</li>
+          <li>The demo products are fictional.</li>
+        </ul>
+      </section>
+
+      <footer class="footer">
+        <span>deslop</span>
+        <a href="https://github.com/ERROR-SIDDH/deslop">github.com/ERROR-SIDDH/deslop</a>
+      </footer>
+    </article>
+  </main>
+
+  <aside class="toc" aria-label="On this page">
+    <h4>On this page</h4>
+    <div id="toc-links"></div>
+  </aside>
+</div>
+
+<script>
+(() => {
+  const root = document.documentElement;
+  try { const t = localStorage.getItem('deslop-theme'); if (t) root.classList.add(t); } catch (e) {}
+  document.getElementById('theme').addEventListener('click', () => {
+    const dark = root.classList.contains('dark') || (!root.classList.contains('light') && matchMedia('(prefers-color-scheme: dark)').matches);
+    root.classList.remove('dark', 'light'); root.classList.add(dark ? 'light' : 'dark');
+    try { localStorage.setItem('deslop-theme', dark ? 'light' : 'dark'); } catch (e) {}
+  });
+
+  const menu = document.getElementById('menu');
+  const setNav = open => { document.body.classList.toggle('nav-open', open); menu.setAttribute('aria-expanded', open); };
+  menu.addEventListener('click', () => setNav(!document.body.classList.contains('nav-open')));
+  document.querySelectorAll('.sidebar a').forEach(a => a.addEventListener('click', () => setNav(false)));
+
+  document.querySelectorAll('.copy').forEach(btn => btn.addEventListener('click', async () => {
+    try { await navigator.clipboard.writeText(btn.closest('.code').querySelector('code').innerText); btn.textContent = 'Copied'; }
+    catch (e) { btn.textContent = 'Press Ctrl+C'; }
+    setTimeout(() => (btn.textContent = 'Copy'), 1500);
+  }));
+
+  // "On this page": h3s of the current section; sidebar + TOC follow the scroll position.
+  const sections = [...document.querySelectorAll('.article section')];
+  const navLinks = [...document.querySelectorAll('.sidebar a')];
+  const toc = document.getElementById('toc-links');
+  let current = null;
+  const buildToc = sec => {
+    toc.innerHTML = '';
+    const heads = [sec.querySelector('h1, h2'), ...sec.querySelectorAll('h3')].filter(Boolean);
+    heads.forEach((h, i) => {
+      if (!h.id) h.id = sec.id + (i ? '-' + h.textContent.toLowerCase().replace(/[^a-z0-9]+/g, '-') : '-top');
+      const a = document.createElement('a'); a.href = '#' + (i ? h.id : sec.id); a.textContent = h.textContent;
+      if (i) a.style.paddingLeft = '24px';
+      toc.appendChild(a);
+    });
+  };
+  const update = () => {
+    const y = scrollY + 120;
+    let sec = sections[0];
+    for (const s of sections) if (s.offsetTop <= y) sec = s;
+    if (innerHeight + scrollY >= document.body.scrollHeight - 4) sec = sections[sections.length - 1];
+    if (sec !== current) {
+      current = sec; buildToc(sec);
+      navLinks.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + sec.id));
+    }
+    const links = [...toc.querySelectorAll('a')];
+    let active = links[0];
+    links.forEach(a => { const t = document.getElementById(a.getAttribute('href').slice(1)); if (t && t.offsetTop <= y) active = a; });
+    links.forEach(a => a.classList.toggle('active', a === active));
+  };
+  addEventListener('scroll', update, { passive: true });
+  update();
+})();
+</script>
+</body>
+</html>
