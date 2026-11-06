@@ -55,14 +55,14 @@ You need [Claude Code](https://claude.com/claude-code) (CLI, desktop app, or IDE
 
 **macOS / Linux**
 ```bash
-git clone https://github.com/<your-user>/deslop.git
+git clone https://github.com/ERROR-SIDDH/deslop.git
 mkdir -p ~/.claude/skills
 cp -r deslop/deslop ~/.claude/skills/deslop
 ```
 
 **Windows (PowerShell)**
 ```powershell
-git clone https://github.com/<your-user>/deslop.git
+git clone https://github.com/ERROR-SIDDH/deslop.git
 New-Item -ItemType Directory -Force "$HOME\.claude\skills" | Out-Null
 Copy-Item -Recurse deslop\deslop "$HOME\.claude\skills\deslop"
 ```
