@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>FlowPilot: workflow automation for teams</title>
+  <script src="https://cdn.tailwindcss.com/3.4.16"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&display=swap" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Geist', 'system-ui', 'sans-serif'] },
+          colors: {
+            background: 'var(--background)', foreground: 'var(--foreground)',
+            muted: { DEFAULT: 'var(--muted)', foreground: 'var(--muted-foreground)' },
+            card: { DEFAULT: 'var(--card)', foreground: 'var(--card-foreground)' },
+            border: 'var(--border)', ring: 'var(--ring)', brand: 'var(--brand)',
+            primary: { DEFAULT: 'var(--primary)', foreground: 'var(--primary-foreground)' },
+          },
+          borderRadius: { md: '6px', lg: 'var(--radius)', xl: '12px' },
+          boxShadow: { sm: 'var(--shadow-sm)', md: 'var(--shadow-md)', lg: 'var(--shadow-lg)' },
+          fontSize: {
+            display: ['clamp(2.5rem, 5vw, 4rem)', { lineHeight: '1', letterSpacing: '-0.04em', fontWeight: '600' }],
+            h1: ['3rem', { lineHeight: '3.25rem', letterSpacing: '-0.035em', fontWeight: '600' }],
+            h2: ['2.25rem', { lineHeight: '2.5rem', letterSpacing: '-0.025em', fontWeight: '600' }],
+            h3: ['1.5rem', { lineHeight: '2rem', letterSpacing: '-0.015em', fontWeight: '600' }],
+            h4: ['1.25rem', { lineHeight: '1.75rem', letterSpacing: '-0.01em', fontWeight: '600' }],
+            'body-lg': ['1.125rem', { lineHeight: '1.75rem' }],
+            body: ['1rem', { lineHeight: '1.5rem' }],
+            small: ['0.875rem', { lineHeight: '1.25rem' }],
+            caption: ['0.75rem', { lineHeight: '1rem', letterSpacing: '0.01em', fontWeight: '500' }],
+          },
+          maxWidth: { container: '1200px' },
+        },
+      },
+    };
+  </script>
+  <style>
+    /* House style B: Product-mono (mnc-system §2) */
+    :root {
+      --background: #ffffff; --foreground: #171717;
+      --muted: #f5f5f5; --muted-foreground: #666666;
+      --card: #ffffff; --card-foreground: #171717;
+      --border: #ebebeb; --input: #e0e0e0; --ring: #171717;
+      --primary: #171717; --primary-foreground: #ffffff;
+      --brand: #5e6ad2;
+      --radius: 8px;
+      --shadow-sm: 0 1px 2px rgba(0,0,0,.06);
+      --shadow-md: 0 1px 1px rgba(0,0,0,.02), 0 4px 8px -4px rgba(0,0,0,.04), 0 16px 24px -8px rgba(0,0,0,.06);
+      --shadow-lg: 0 1px 1px rgba(0,0,0,.02), 0 8px 16px -4px rgba(0,0,0,.04), 0 24px 32px -8px rgba(0,0,0,.06);
+      --duration-micro: 120ms; --duration-enter: 240ms; --duration-exit: 150ms;
+      --ease-enter: cubic-bezier(0, 0, 0.38, 0.9); --ease-standard: cubic-bezier(0.2, 0, 0.38, 0.9);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --background: #0a0a0a; --foreground: #ededed;
+        --muted: #1a1a1a; --muted-foreground: #a1a1a1;
+        --card: #111111; --card-foreground: #ededed;
+        --border: rgba(255,255,255,0.08); --input: rgba(255,255,255,0.14); --ring: #ededed;
+        --primary: #ededed; --primary-foreground: #0a0a0a;
+        --brand: #7c86e0;
+      }
+    }
+    body { background: var(--background); color: var(--foreground); }
+    a, button { transition: color var(--duration-micro) var(--ease-standard), background-color var(--duration-micro) var(--ease-standard); }
+    :focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+    .tnum { font-variant-numeric: tabular-nums; }
+    .inverted :focus-visible { outline-color: var(--background); } /* --ring equals the band colour here */
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; animation: none !important; } }
+  </style>
+</head>
+<body class="font-sans text-body antialiased">
+  <nav class="border-b border-border">
+    <div class="mx-auto flex max-w-container items-center justify-between px-6 py-4 md:px-8">
+      <a href="#" class="text-h4 text-foreground">FlowPilot</a>
+      <div class="hidden gap-8 text-small text-muted-foreground md:flex">
+        <a href="#features" class="hover:text-foreground">Features</a>
+        <a href="#" class="hover:text-foreground">Pricing</a>
+      </div>
+      <a href="#" class="inline-flex min-h-[44px] items-center rounded-lg bg-primary px-4 text-small font-medium text-primary-foreground hover:opacity-90">Start free trial</a>
+    </div>
+  </nav>
+
+  <header class="mx-auto grid max-w-container gap-12 px-6 py-16 md:px-8 md:py-24 lg:grid-cols-12 lg:items-center">
+    <div class="lg:col-span-5">
+      <h1 class="text-display text-foreground">Workflow automation for teams</h1>
+      <p class="mt-6 max-w-[50ch] text-body-lg text-muted-foreground">Automate the repetitive steps in your team's workflows. FlowPilot uses AI to adapt as your process changes.</p>
+      <div class="mt-8 flex flex-wrap items-center gap-6">
+        <a href="#" class="inline-flex min-h-[44px] items-center rounded-lg bg-primary px-5 font-medium text-primary-foreground hover:opacity-90">Start free trial</a>
+        <a href="#" class="inline-flex min-h-[44px] items-center font-medium text-brand hover:underline">See how it works</a>
+      </div>
+    </div>
+
+    <figure class="lg:col-span-7">
+      <div class="rounded-xl border border-border bg-card p-6">
+        <div class="flex items-baseline justify-between">
+          <p class="text-small font-medium text-card-foreground">Runs, last 5 weeks</p>
+          <p class="text-caption text-muted-foreground">Sample data</p>
+        </div>
+        <dl class="mt-6 grid grid-cols-2 gap-6 border-b border-border pb-6">
+          <div><dt class="text-caption text-muted-foreground">Tasks automated</dt><dd class="tnum mt-1 text-h3 text-card-foreground">12,543</dd></div>
+          <div><dt class="text-caption text-muted-foreground">Hours saved</dt><dd class="tnum mt-1 text-h3 text-card-foreground">3,210</dd></div>
+        </dl>
+        <div class="mt-6 flex h-32 items-end gap-3" aria-hidden="true">
+          <div class="h-1/3 flex-1 rounded-sm bg-muted"></div>
+          <div class="h-1/2 flex-1 rounded-sm bg-muted"></div>
+          <div class="h-2/3 flex-1 rounded-sm bg-muted"></div>
+          <div class="h-full flex-1 rounded-sm bg-muted"></div>
+          <div class="h-3/4 flex-1 rounded-sm bg-brand"></div>
+        </div>
+        <div class="tnum mt-2 flex gap-3 text-caption text-muted-foreground">
+          <span class="flex-1">Wk 1</span><span class="flex-1">Wk 2</span><span class="flex-1">Wk 3</span><span class="flex-1">Wk 4</span><span class="flex-1">This wk</span>
+        </div>
+      </div>
+      <figcaption class="mt-3 text-small text-muted-foreground">Fig. 1 — Run history dashboard.</figcaption>
+    </figure>
+  </header>
+
+  <section id="features" class="border-t border-border">
+    <div class="mx-auto grid max-w-container gap-12 px-6 py-16 md:px-8 md:py-24 lg:grid-cols-12">
+      <h2 class="text-h2 text-foreground lg:col-span-4">What FlowPilot does</h2>
+      <dl class="divide-y divide-border border-y border-border lg:col-span-8">
+        <div class="grid gap-2 py-6 md:grid-cols-3 md:gap-8">
+          <dt class="text-h4 text-foreground">Automation</dt>
+          <dd class="max-w-[65ch] text-muted-foreground md:col-span-2">Runs your workflows so the repetitive steps no longer need a person.</dd>
+        </div>
+        <div class="grid gap-2 py-6 md:grid-cols-3 md:gap-8">
+          <dt class="text-h4 text-foreground">Adaptive workflows</dt>
+          <dd class="max-w-[65ch] text-muted-foreground md:col-span-2">Learns from how your team works and adjusts workflows as that changes.</dd>
+        </div>
+        <div class="grid gap-2 py-6 md:grid-cols-3 md:gap-8">
+          <dt class="text-h4 text-foreground">Security</dt>
+          <dd class="max-w-[65ch] text-muted-foreground md:col-span-2">Your data is encrypted.</dd>
+        </div>
+      </dl>
+    </div>
+  </section>
+
+  <section class="inverted bg-foreground text-background">
+    <div class="mx-auto flex max-w-container flex-col gap-8 px-6 py-16 md:flex-row md:items-center md:justify-between md:px-8 md:py-24">
+      <h2 class="text-h2">Start automating your team's workflows</h2>
+      <a href="#" class="inline-flex min-h-[44px] items-center self-start rounded-lg bg-background px-5 font-medium text-foreground hover:opacity-90 md:self-auto">Start free trial</a>
+    </div>
+  </section>
+
+  <footer class="mx-auto max-w-container px-6 py-8 text-small text-muted-foreground md:px-8">© 2026 FlowPilot.</footer>
+</body>
+</html>

@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>InvoiceAI Dashboard</title>
+  <script src="https://cdn.tailwindcss.com/3.4.16"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <style>body { font-family: "Poppins", sans-serif; }</style>
+</head>
+<body class="bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 min-h-screen text-slate-800">
+  <div class="flex">
+    <aside class="w-64 min-h-screen bg-gradient-to-b from-indigo-600 to-purple-700 text-white p-6 rounded-r-3xl shadow-2xl shadow-purple-500/30">
+      <div class="text-2xl font-extrabold mb-10">✨ InvoiceAI</div>
+      <nav class="space-y-2">
+        <a class="flex items-center gap-3 rounded-2xl bg-white/20 backdrop-blur-md px-4 py-3 font-semibold" href="#">🏠 Dashboard</a>
+        <a class="flex items-center gap-3 rounded-2xl px-4 py-3 hover:bg-white/10" href="#">📄 Invoices</a>
+        <a class="flex items-center gap-3 rounded-2xl px-4 py-3 hover:bg-white/10" href="#">👥 Clients</a>
+        <a class="flex items-center gap-3 rounded-2xl px-4 py-3 hover:bg-white/10" href="#">⚙️ Settings</a>
+      </nav>
+      <div class="mt-10 rounded-2xl bg-gradient-to-r from-pink-500 to-orange-400 p-4 text-sm"><p class="font-bold">🚀 Upgrade to Pro</p><p class="opacity-80">Unlock AI-powered insights!</p></div>
+    </aside>
+
+    <main class="flex-1 p-10">
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="text-4xl font-extrabold bg-gradient-to-r from-indigo-600 to-pink-500 bg-clip-text text-transparent">Welcome Back, Alex! 👋</h1>
+          <p class="text-gray-500 mt-1">Here's What's Happening With Your Business Today</p>
+        </div>
+        <button class="rounded-full bg-gradient-to-r from-violet-500 to-fuchsia-500 px-6 py-3 font-bold text-white shadow-lg shadow-fuchsia-500/40 hover:scale-105 transition">+ New Invoice ✨</button>
+      </div>
+
+      <div class="mt-8 grid grid-cols-4 gap-6">
+        <div class="rounded-3xl bg-white/70 backdrop-blur-xl p-6 shadow-xl shadow-indigo-200/50 border-2 border-white hover:-translate-y-1 transition"><div class="h-12 w-12 rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-400 grid place-items-center text-white text-xl">💰</div><p class="mt-4 text-sm text-gray-500">Total Revenue</p><p class="text-3xl font-extrabold">$48,295</p><p class="text-xs text-green-500 font-semibold">↑ 12.5% 🔥</p></div>
+        <div class="rounded-3xl bg-white/70 backdrop-blur-xl p-6 shadow-xl shadow-indigo-200/50 border-2 border-white hover:-translate-y-1 transition"><div class="h-12 w-12 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-400 grid place-items-center text-white text-xl">📄</div><p class="mt-4 text-sm text-gray-500">Invoices Sent</p><p class="text-3xl font-extrabold">1,284</p><p class="text-xs text-green-500 font-semibold">↑ 8.2%</p></div>
+        <div class="rounded-3xl bg-white/70 backdrop-blur-xl p-6 shadow-xl shadow-indigo-200/50 border-2 border-white hover:-translate-y-1 transition"><div class="h-12 w-12 rounded-2xl bg-gradient-to-br from-orange-500 to-yellow-400 grid place-items-center text-white text-xl">⏳</div><p class="mt-4 text-sm text-gray-500">Pending</p><p class="text-3xl font-extrabold">$6,420</p><p class="text-xs text-red-500 font-semibold">↓ 3.1%</p></div>
+        <div class="rounded-3xl bg-white/70 backdrop-blur-xl p-6 shadow-xl shadow-indigo-200/50 border-2 border-white hover:-translate-y-1 transition"><div class="h-12 w-12 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-400 grid place-items-center text-white text-xl">⚡</div><p class="mt-4 text-sm text-gray-500">AI Accuracy</p><p class="text-3xl font-extrabold">99.9%</p><p class="text-xs text-indigo-500 font-semibold">✨ Live</p></div>
+      </div>
+
+      <h2 class="mt-12 text-2xl font-bold">Recent Invoices</h2>
+      <div class="mt-4 space-y-4">
+        <div class="flex items-center justify-between rounded-3xl bg-white/80 backdrop-blur-md p-5 shadow-lg shadow-purple-100 border border-purple-100"><div class="flex items-center gap-4"><div class="h-12 w-12 rounded-full bg-gradient-to-br from-pink-400 to-purple-500"></div><div><p class="font-bold">Acme Corp</p><p class="text-sm text-slate-400">INV-2041 · Due Nov 12</p></div></div><p class="font-extrabold text-lg">$4,200</p><span class="rounded-full bg-gradient-to-r from-green-400 to-emerald-500 px-4 py-1 text-xs font-bold text-white uppercase tracking-wider">Paid ✓</span></div>
+        <div class="flex items-center justify-between rounded-3xl bg-white/80 backdrop-blur-md p-5 shadow-lg shadow-purple-100 border border-purple-100"><div class="flex items-center gap-4"><div class="h-12 w-12 rounded-full bg-gradient-to-br from-blue-400 to-indigo-500"></div><div><p class="font-bold">Globex Ltd</p><p class="text-sm text-slate-400">INV-2040 · Due Nov 9</p></div></div><p class="font-extrabold text-lg">$1,850</p><span class="rounded-full bg-gradient-to-r from-yellow-400 to-orange-500 px-4 py-1 text-xs font-bold text-white uppercase tracking-wider">Pending ⏳</span></div>
+        <div class="flex items-center justify-between rounded-3xl bg-white/80 backdrop-blur-md p-5 shadow-lg shadow-purple-100 border border-purple-100"><div class="flex items-center gap-4"><div class="h-12 w-12 rounded-full bg-gradient-to-br from-cyan-400 to-blue-500"></div><div><p class="font-bold">Initech</p><p class="text-sm text-slate-400">INV-2039 · Due Nov 2</p></div></div><p class="font-extrabold text-lg">$920</p><span class="rounded-full bg-gradient-to-r from-red-400 to-pink-500 px-4 py-1 text-xs font-bold text-white uppercase tracking-wider">Overdue 🚨</span></div>
+      </div>
+
+      <div class="mt-12 rounded-3xl bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 p-8 text-white shadow-2xl shadow-purple-500/40">
+        <h3 class="text-2xl font-extrabold">🤖 AI Insights</h3>
+        <p class="mt-2 opacity-90">Our cutting-edge AI predicts you'll get paid 3 days faster by sending reminders on Tuesdays! Supercharge your cash flow today.</p>
+        <button class="mt-4 rounded-full bg-white px-6 py-2 font-bold text-purple-600 animate-pulse">Enable Smart Reminders →</button>
+      </div>
+    </main>
+  </div>
+</body>
+</html>

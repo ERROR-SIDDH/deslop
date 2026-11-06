@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>FlowPilot — Workflow automation for finance and operations teams</title>
+  <script src="https://cdn.tailwindcss.com/3.4.16"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <script>
+    // Original was forced dark: dark stays the default, light is opt-in via the header toggle.
+    try { if (localStorage.getItem('theme') === 'light') document.documentElement.classList.remove('dark'); } catch (e) {}
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: { sans: ['"IBM Plex Sans"', 'system-ui', 'sans-serif'] },
+          colors: {
+            background: 'var(--background)', foreground: 'var(--foreground)',
+            card: { DEFAULT: 'var(--card)', foreground: 'var(--card-foreground)' },
+            popover: { DEFAULT: 'var(--popover)', foreground: 'var(--popover-foreground)' },
+            muted: { DEFAULT: 'var(--muted)', foreground: 'var(--muted-foreground)' },
+            border: 'var(--border)', input: 'var(--input)', ring: 'var(--ring)',
+            primary: { DEFAULT: 'var(--primary)', foreground: 'var(--primary-foreground)', hover: 'var(--primary-hover)', subtle: 'var(--primary-subtle)', 'subtle-foreground': 'var(--primary-subtle-foreground)' },
+            secondary: { DEFAULT: 'var(--secondary)', foreground: 'var(--secondary-foreground)' },
+            accent: { DEFAULT: 'var(--accent)', foreground: 'var(--accent-foreground)' },
+            destructive: 'var(--destructive)', success: 'var(--success)', warning: 'var(--warning)',
+            'chart-neutral': 'var(--chart-neutral)'
+          },
+          borderRadius: { sm: 'var(--radius-sm)', md: 'var(--radius-md)', lg: 'var(--radius-lg)', xl: 'var(--radius-xl)' },
+          boxShadow: { sm: 'var(--shadow-sm)', md: 'var(--shadow-md)', lg: 'var(--shadow-lg)' },
+          maxWidth: { container: '1200px' },
+          fontSize: {
+            display: ['clamp(2.5rem, 5vw, 4rem)', { lineHeight: '1', letterSpacing: '-0.04em', fontWeight: '300' }],
+            h1: ['3rem', { lineHeight: '3.25rem', letterSpacing: '-0.035em', fontWeight: '400' }],
+            h2: ['2.25rem', { lineHeight: '2.5rem', letterSpacing: '-0.025em', fontWeight: '400' }],
+            h3: ['1.5rem', { lineHeight: '2rem', letterSpacing: '-0.015em', fontWeight: '500' }],
+            h4: ['1.25rem', { lineHeight: '1.75rem', letterSpacing: '-0.01em', fontWeight: '600' }],
+            'body-lg': ['1.125rem', { lineHeight: '1.75rem' }],
+            body: ['1rem', { lineHeight: '1.5rem' }],
+            small: ['0.875rem', { lineHeight: '1.25rem', letterSpacing: '0.01em' }],
+            caption: ['0.75rem', { lineHeight: '1rem', letterSpacing: '0.01em', fontWeight: '500' }]
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    /* deslop palette: style A, brand #8B5CF6 -> oklch(0.61 0.219 293) */
+    :root {
+      --background: #ffffff;
+      --foreground: #0f1215;
+      --card: #ffffff;
+      --card-foreground: #0f1215;
+      --popover: #ffffff;
+      --popover-foreground: #0f1215;
+      --muted: #f0f5f9;
+      --muted-foreground: #5a5e62;
+      --border: #e3e8ec;
+      --input: #9da1a6;
+      --primary: #7449d2;
+      --primary-foreground: #ffffff;
+      --primary-hover: #6738c1;
+      --primary-subtle: #f3f1ff;
+      --primary-subtle-foreground: #5219a6;
+      --secondary: #1b1e22;
+      --secondary-foreground: #ffffff;
+      --accent: #f0f5f9;
+      --accent-foreground: #0f1215;
+      --ring: #7449d2;
+      --destructive: #c22826;
+      --success: #137738;
+      --warning: #d28f09;
+      --radius: 4px;
+
+      /* additions: radius scale (components.md §2), chart neutral (ramp 300), shadows + motion (mnc-system §5–6) */
+      --radius-sm: calc(var(--radius) - 2px);
+      --radius-md: var(--radius);
+      --radius-lg: calc(var(--radius) + 4px);
+      --radius-xl: calc(var(--radius) + 8px);
+      --chart-neutral: #d1d5da;
+      --primary-active: color-mix(in oklch, var(--primary), black 8%);
+      --shadow-sm: 0 1px 2px rgba(0,0,0,.06);
+      --shadow-md: 0 1px 1px rgba(0,0,0,.02), 0 4px 8px -4px rgba(0,0,0,.04), 0 16px 24px -8px rgba(0,0,0,.06);
+      --shadow-lg: 0 1px 1px rgba(0,0,0,.02), 0 8px 16px -4px rgba(0,0,0,.04), 0 24px 32px -8px rgba(0,0,0,.06);
+      --duration-micro: 120ms;
+      --duration-enter: 240ms;
+      --duration-exit: 150ms;
+      --ease-standard: cubic-bezier(0.2, 0, 0.38, 0.9);
+      --ease-enter: cubic-bezier(0, 0, 0.38, 0.9);
+      --figure-edge: rgba(0,0,0,.08);
+    }
+    .dark {
+      --background: #080a0d;
+      --foreground: #e4e8ed;
+      --card: #0f1215;
+      --card-foreground: #e4e8ed;
+      --popover: #16191c;
+      --popover-foreground: #e4e8ed;
+      --muted: #14171b;
+      --muted-foreground: #9ea2a6;
+      --border: #24272a;
+      --input: #303337;
+      --primary: #a389f8;
+      --primary-foreground: #080a0d;
+      --primary-hover: #af98fe;
+      --primary-subtle: #231d37;
+      --primary-subtle-foreground: #c6b9ff;
+      --secondary: #24272a;
+      --secondary-foreground: #e4e8ed;
+      --accent: #1b1e22;
+      --accent-foreground: #e4e8ed;
+      --ring: #a389f8;
+      --destructive: #ef6661;
+      --success: #62bb78;
+      --warning: #e9b452;
+
+      --chart-neutral: #303337;
+      --primary-active: color-mix(in oklch, var(--primary), white 8%);
+      --figure-edge: rgba(255,255,255,.08);
+    }
+
+    html { color-scheme: light; }
+    html.dark { color-scheme: dark; }
+    body { background: var(--background); color: var(--foreground); font-family: "IBM Plex Sans", system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+    .tabular { font-variant-numeric: tabular-nums; }
+
+    /* interaction states (color.md §6): lightness only, never hue */
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border-radius: var(--radius-md); font-weight: 500; white-space: nowrap;
+           transition: background-color var(--duration-micro) var(--ease-standard), border-color var(--duration-micro) var(--ease-standard); }
+    .btn-primary { background: var(--primary); color: var(--primary-foreground); }
+    .btn-primary:hover { background: var(--primary-hover); }
+    .btn-primary:active { background: var(--primary-active); }
+    .btn-secondary { background: var(--background); color: var(--foreground); border: 1px solid var(--border); }
+    .btn-secondary:hover { background: var(--muted); }
+    .btn-secondary:active { background: var(--accent); }
+    .btn-ghost { background: transparent; color: var(--foreground); }
+    .btn-ghost:hover { background: var(--muted); }
+    .btn-ghost:active { background: var(--accent); }
+    .btn:disabled, .btn[aria-disabled="true"] { opacity: .5; cursor: not-allowed; pointer-events: none; }
+    .link { color: var(--primary); text-underline-offset: 3px; }
+    .link:hover { text-decoration: underline; }
+    a:focus-visible, button:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+
+    /* sticky header is the one surface allowed to blur (mnc-system §5) */
+    .header-surface { background: color-mix(in srgb, var(--background) 80%, transparent); }
+
+    /* inverted closing band: keep focus visible on bg-foreground */
+    .inverted { --ring: var(--background); }
+    .btn-inverted { background: var(--background); color: var(--foreground); }
+    .btn-inverted:hover { background: var(--muted); }
+    .btn-inverted:active { background: var(--accent); }
+
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; animation: none !important; } }
+  </style>
+</head>
+<body class="font-sans text-body">
+
+  <nav class="header-surface sticky top-0 z-10 border-b border-border backdrop-blur-md">
+    <div class="mx-auto flex h-16 max-w-container items-center justify-between px-6 md:px-8">
+      <a href="#" class="text-h4 text-foreground rounded-sm">FlowPilot</a>
+      <div class="hidden items-center gap-1 text-small md:flex">
+        <a href="#features" class="btn btn-ghost h-10 px-3">Features</a>
+        <a href="#" class="btn btn-ghost h-10 px-3">Pricing</a>
+      </div>
+      <div class="flex items-center gap-2">
+        <button type="button" id="theme-toggle" aria-label="Switch colour theme" title="Switch colour theme" class="btn btn-ghost h-11 w-11 text-muted-foreground md:h-10 md:w-10">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="12" cy="12" r="8.25"/><path d="M12 3.75v16.5a8.25 8.25 0 0 0 0-16.5Z" fill="currentColor"/></svg>
+        </button>
+        <a href="#" class="btn btn-secondary h-11 px-4 text-small md:h-10">Contact sales</a>
+      </div>
+    </div>
+  </nav>
+
+  <header class="mx-auto grid max-w-container gap-12 px-6 py-16 md:px-8 md:py-24 lg:grid-cols-12 lg:items-center">
+    <div class="lg:col-span-5">
+      <h1 class="text-display text-foreground">Workflow automation for finance and operations teams</h1>
+      <p class="mt-6 max-w-[50ch] text-body-lg text-muted-foreground">FlowPilot automates repetitive workflows, adapts to how your team works and encrypts your data.</p>
+      <div class="mt-8 flex flex-wrap items-center gap-6">
+        <a href="#" class="btn btn-primary h-11 px-5 text-body">Start free trial</a>
+        <a href="#" class="link text-body font-medium">See how it works</a>
+      </div>
+    </div>
+
+    <figure class="lg:col-span-7">
+      <div class="rounded-md border border-border bg-card p-6" style="box-shadow: 0 0 0 1px var(--figure-edge) inset;">
+        <dl class="grid grid-cols-2 divide-x divide-border">
+          <div class="pr-6">
+            <dt class="text-caption text-muted-foreground">Tasks automated</dt>
+            <dd class="tabular mt-1 text-h3 text-foreground">12,543</dd>
+          </div>
+          <div class="pl-6">
+            <dt class="text-caption text-muted-foreground">Hours saved</dt>
+            <dd class="tabular mt-1 text-h3 text-foreground">3,210</dd>
+          </div>
+        </dl>
+        <div class="mt-6 border-t border-border pt-6">
+          <div class="flex h-32 items-end gap-2" role="img" aria-label="Sample bar chart of tasks automated per month, most recent month highlighted">
+            <div class="h-1/3 flex-1 rounded-t-sm bg-chart-neutral"></div>
+            <div class="h-1/2 flex-1 rounded-t-sm bg-chart-neutral"></div>
+            <div class="h-2/3 flex-1 rounded-t-sm bg-chart-neutral"></div>
+            <div class="h-3/4 flex-1 rounded-t-sm bg-chart-neutral"></div>
+            <div class="h-full flex-1 rounded-t-sm bg-primary"></div>
+          </div>
+          <div class="tabular mt-2 grid grid-cols-5 gap-2 text-caption text-muted-foreground">
+            <span>Jun</span><span>Jul</span><span>Aug</span><span>Sep</span><span>Oct</span>
+          </div>
+        </div>
+      </div>
+      <figcaption class="mt-3 text-small text-muted-foreground">Fig. 1 — Sample data, for illustration only.</figcaption>
+    </figure>
+  </header>
+
+  <section id="features" class="border-t border-border">
+    <div class="mx-auto max-w-container px-6 py-16 md:px-8 md:py-24">
+      <h2 class="text-h2 text-foreground">What FlowPilot does</h2>
+      <dl class="mt-12 border-t border-border">
+        <div class="grid gap-3 border-b border-border py-6 md:grid-cols-12 md:gap-6">
+          <dt class="text-h4 text-foreground md:col-span-4">Speed</dt>
+          <dd class="max-w-[65ch] text-body text-muted-foreground md:col-span-8">Workflows that take hours of manual handling run automatically.</dd>
+        </div>
+        <div class="grid gap-3 border-b border-border py-6 md:grid-cols-12 md:gap-6">
+          <dt class="text-h4 text-foreground md:col-span-4">Adaptive automation</dt>
+          <dd class="max-w-[65ch] text-body text-muted-foreground md:col-span-8">Learns how your team works and adjusts its automations to match.</dd>
+        </div>
+        <div class="grid gap-3 border-b border-border py-6 md:grid-cols-12 md:gap-6">
+          <dt class="text-h4 text-foreground md:col-span-4">Security</dt>
+          <dd class="max-w-[65ch] text-body text-muted-foreground md:col-span-8">Your workflow data is encrypted.</dd>
+        </div>
+      </dl>
+    </div>
+  </section>
+
+  <section class="inverted bg-foreground text-background">
+    <div class="mx-auto flex max-w-container flex-col items-start gap-8 px-6 py-16 md:flex-row md:items-center md:justify-between md:px-8 md:py-24">
+      <h2 class="text-h2">Automate your team's workflows with FlowPilot</h2>
+      <a href="#" class="btn btn-inverted h-11 px-5 text-body">Start free trial</a>
+    </div>
+  </section>
+
+  <footer class="border-t border-border">
+    <div class="mx-auto max-w-container px-6 py-8 text-small text-muted-foreground md:px-8">© 2026 FlowPilot</div>
+  </footer>
+
+  <script>
+    document.getElementById('theme-toggle').addEventListener('click', function () {
+      var dark = document.documentElement.classList.toggle('dark');
+      try { localStorage.setItem('theme', dark ? 'dark' : 'light'); } catch (e) {}
+    });
+  </script>
+</body>
+</html>
