@@ -15,6 +15,19 @@ References. Read all four before porting:
 - `references/color.md`: palette generation, colour budget, accent whitelist, states, surfaces and dark mode.
 - `references/components.md`: which object to use for which content, plus radius, border-width, control-size and padding specs per style.
 
+## Running in any agent
+
+This skill uses the open Agent Skills format. It works the same in Claude Code, Codex, Antigravity, Lovable, Cursor, Windsurf, Copilot and Gemini CLI. `<skill-dir>` means the folder that contains this file. Use the first option that is available:
+
+1. **deslop MCP tools are connected** (`deslop_scan`, `deslop_palette`, `deslop_audit_script`, `deslop_reference`): call them wherever a step below runs a script.
+2. **You can run shell commands**: run the scripts with `node` (version 18 or later), as written below.
+3. **You cannot run code** (Lovable, Bolt, v0 and other web builders): skip the scripts.
+   - Use `references/slop-catalog.md` as the audit checklist.
+   - For tokens, start from the hand-tuned blocks in `references/mnc-system.md` §2, then adapt the brand colour by hand with the caps in `references/color.md` §0: keep the hue, OKLCH lightness ≤ 0.53, chroma ≤ the style cap, white text at 4.5:1 or better.
+   - The review gate in step 4 is mandatory either way.
+
+The live fingerprint needs any browser tool that can execute JavaScript on a page. Without one, skip it and say so.
+
 ## Workflow
 
 ### 1. Audit (measure before you touch anything)
@@ -25,7 +38,7 @@ References. Read all four before porting:
   ```
   It prints every tell as `file:line` with its fix, plus a weighted total.
 - **Live fingerprint** (when a browser tool is available and the site runs or is deployed):
-  - Inject the contents of `scripts/slop-audit.js` with the browser's JS-exec tool on the rendered page.
+  - Inject the contents of `scripts/slop-audit.js` (or the text returned by `deslop_audit_script`) on the rendered page, using your browser tool's JavaScript execution or the DevTools console.
   - It returns a `slopScore` from 0–100 and a `verdict`: `clean` below 25, `borderline` from 25 to 49, `slop` from 50.
   - Calibration: Linear about 11, Stripe about 39, typical Lovable/v0 pages 74–99.
   - It also returns `budget`: `accentAreaPct`, `chromaticHueFamilies` and `distinctRadii`. Compare these with color.md §1 and components.md §2.

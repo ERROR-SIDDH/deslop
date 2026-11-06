@@ -4,6 +4,7 @@
 // No dependencies. Read-only.
 import fs from 'node:fs';
 import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 
 const RULES = [
   // [id, severity 3=loud 1=minor, regex, fix]
@@ -70,20 +71,27 @@ function walk(p, out = []) {
   return out;
 }
 
-function report(hits, json) {
-  if (json) return console.log(JSON.stringify(hits, null, 1));
-  const byId = {};
+// Scan a file or directory; file paths in hits are relative to `base`.
+export function scanPath(target, base = process.cwd()) {
+  const files = walk(path.resolve(base, target)).map(f => [path.relative(base, f), fs.readFileSync(f, 'utf8')]);
+  return [...files.flatMap(([f, t]) => scanText(t, f)), ...aggregate(files.map(([, t]) => t))];
+}
+
+export function formatReport(hits) {
+  const out = [], byId = {};
   for (const h of hits) (byId[h.id] ||= []).push(h);
   const weight = hits.reduce((a, h) => a + h.sev, 0);
   for (const [id, hs] of Object.entries(byId).sort((a, b) => b[1][0].sev - a[1][0].sev || b[1].length - a[1].length)) {
-    console.log(`\n[${'!'.repeat(hs[0].sev)}] ${id} x${hs.length}  ->  ${hs[0].fix}`);
-    for (const h of hs.slice(0, 8)) console.log(h.line ? `   ${h.file}:${h.line}  ${h.match}` : `   ${h.match}`);
-    if (hs.length > 8) console.log(`   ... +${hs.length - 8} more`);
+    out.push(`\n[${'!'.repeat(hs[0].sev)}] ${id} x${hs.length}  ->  ${hs[0].fix}`);
+    for (const h of hs.slice(0, 8)) out.push(h.line ? `   ${h.file}:${h.line}  ${h.match}` : `   ${h.match}`);
+    if (hs.length > 8) out.push(`   ... +${hs.length - 8} more`);
   }
-  console.log(`\n${hits.length} tells, weighted ${weight}. ${weight === 0 ? 'Clean.' : weight < 20 ? 'Minor polish.' : weight < 60 ? 'Noticeably templated.' : 'Full AI-slop: run the deslop port.'}`);
+  out.push(`\n${hits.length} tells, weighted ${weight}. ${weight === 0 ? 'Clean.' : weight < 20 ? 'Minor polish.' : weight < 60 ? 'Noticeably templated.' : 'Full AI-slop: run the deslop port.'}`);
+  return out.join('\n');
 }
 
-if (process.argv.includes('--self-test')) {
+const isMain = process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href;
+if (!isMain) { /* imported as a module (e.g. by mcp-server.mjs) */ } else if (process.argv.includes('--self-test')) {
   const ids = s => [...new Set(scanText(s).map(h => h.id))].sort().join(',');
   const assert = (got, want) => { if (got !== want) { console.error(`FAIL: got "${got}" want "${want}"`); process.exit(1); } };
   assert(ids('<h1 className="bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">'), 'blue-purple-gradient,gradient-text');
@@ -104,6 +112,6 @@ if (process.argv.includes('--self-test')) {
 } else {
   const target = process.argv.slice(2).find(a => !a.startsWith('--'));
   if (!target) { console.error('usage: node slop-scan.mjs <dir-or-file> [--json] | --self-test'); process.exit(2); }
-  const files = walk(path.resolve(target)).map(f => [path.relative(process.cwd(), f), fs.readFileSync(f, 'utf8')]);
-  report([...files.flatMap(([f, t]) => scanText(t, f)), ...aggregate(files.map(([, t]) => t))], process.argv.includes('--json'));
+  const hits = scanPath(target);
+  console.log(process.argv.includes('--json') ? JSON.stringify(hits, null, 1) : formatReport(hits));
 }

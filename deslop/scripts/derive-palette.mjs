@@ -3,6 +3,7 @@
 // Usage: node derive-palette.mjs <brand-hex|none> <A|B|C> [--format=hex|oklch|hsl]   |   --self-test
 // Prints shadcn-compatible :root/.dark blocks plus a WCAG contrast report. No dependencies.
 
+import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 // ---- colour math (Björn Ottosson's OKLab) ----
@@ -143,16 +144,18 @@ function fmt(hex, f) {
   return `${((h + 360) % 360).toFixed(1)} ${(s * 100).toFixed(1)}% ${(l * 100).toFixed(1)}%`; // shadcn v3 channel form
 }
 
-function print(r, f) {
+export function formatPalette(r, f = 'hex') {
   const block = (sel, t) => `${sel} {\n${Object.entries(t).map(([k, v]) => `  --${k}: ${fmt(v, f)};`).join('\n')}${sel === ':root' ? `\n  --radius: ${r.radius};\n  --radius-sm: ${r.radii[0]}px;\n  --radius-md: ${r.radii[1]}px;\n  --radius-lg: ${r.radii[2]}px;\n  --radius-xl: ${r.radii[3]}px;` : ''}\n}`;
-  console.log(`/* deslop palette: style ${r.style}, brand ${r.brandIn} -> oklch(${r.brandOklch.L.toFixed(2)} ${r.brandOklch.C.toFixed(3)} ${r.brandOklch.H.toFixed(0)}) */`);
-  console.log(block(':root', r.light) + '\n' + block('.dark', r.dark));
-  console.log(`\n/* neutral ramp (light): ${Object.entries(r.ramp).map(([k, v]) => `${k} ${v}`).join(' · ')} */`);
-  console.log('\n/* contrast report */');
-  for (const c of r.report) console.log(`/* ${c.pass ? 'ok  ' : 'FAIL'} ${c.mode.padEnd(5)} ${c.name}: ${c.ratio} (min ${c.min}) */`);
+  return [
+    `/* deslop palette: style ${r.style}, brand ${r.brandIn} -> oklch(${r.brandOklch.L.toFixed(2)} ${r.brandOklch.C.toFixed(3)} ${r.brandOklch.H.toFixed(0)}) */`,
+    block(':root', r.light) + '\n' + block('.dark', r.dark),
+    `\n/* neutral ramp (light): ${Object.entries(r.ramp).map(([k, v]) => `${k} ${v}`).join(' · ')} */`,
+    '\n/* contrast report */',
+    ...r.report.map(c => `/* ${c.pass ? 'ok  ' : 'FAIL'} ${c.mode.padEnd(5)} ${c.name}: ${c.ratio} (min ${c.min}) */`),
+  ].join('\n');
 }
 
-const isMain = process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href;
+const isMain = process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href;
 if (!isMain) { /* imported as a module */ } else if (process.argv.includes('--self-test')) {
   for (const [brand, s] of [['#8B5CF6', 'A'], ['#8B5CF6', 'B'], ['#8B5CF6', 'C'], ['#3B82F6', 'A'], ['#22c55e', 'C'], ['#000000', 'B'], ['none', 'A'], ['#facc15', 'C']]) {
     const r = derive(brand, s);
@@ -168,5 +171,5 @@ if (!isMain) { /* imported as a module */ } else if (process.argv.includes('--se
   const [brand, style] = process.argv.slice(2).filter(a => !a.startsWith('--'));
   const f = (process.argv.find(a => a.startsWith('--format=')) || '--format=hex').split('=')[1];
   if (!brand || !style) { console.error('usage: node derive-palette.mjs <brand-hex|none> <A|B|C> [--format=hex|oklch|hsl] | --self-test'); process.exit(2); }
-  print(derive(brand, style.toUpperCase()), f);
+  console.log(formatPalette(derive(brand, style.toUpperCase()), f));
 }

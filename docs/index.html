@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>deslop docs</title>
-<meta name="description" content="Documentation for deslop, a Claude Code skill that turns AI-generated websites into MNC-grade design.">
+<meta name="description" content="Documentation for deslop, an agent skill and MCP server that turns AI-generated websites into MNC-grade design.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -217,6 +217,7 @@ figcaption b { color: var(--foreground); font-weight: 500; }
       <h4>Get started</h4>
       <a href="#overview">Overview</a>
       <a href="#install">Install</a>
+      <a href="#tool-setup">Tool setup</a>
       <a href="#usage">Usage</a>
     </div>
     <div class="nav-group">
@@ -230,6 +231,7 @@ figcaption b { color: var(--foreground); font-weight: 500; }
       <a href="#scanner">Static scanner</a>
       <a href="#palette">Palette generator</a>
       <a href="#audit">Live audit</a>
+      <a href="#mcp">MCP server</a>
     </div>
     <div class="nav-group">
       <h4>Demos</h4>
@@ -249,9 +251,9 @@ figcaption b { color: var(--foreground); font-weight: 500; }
     <article class="article">
 
       <section id="overview">
-        <span class="eyebrow-link">Claude Code skill</span>
+        <span class="eyebrow-link">Agent skill · MCP server</span>
         <h1>deslop</h1>
-        <p class="lead">Turn AI-generated websites into design that holds up next to Stripe, Linear and IBM. deslop audits a page, picks one design direction and ports colour, type, components, radius, motion and copy to an enterprise standard.</p>
+        <p class="lead">Turn AI-generated websites into design that holds up next to Stripe, Linear and IBM. deslop audits a page, picks one design direction and ports colour, type, components, radius, motion and copy to an enterprise standard. It works in Claude Code, Codex, Antigravity, Lovable, Cursor, Windsurf, Copilot, Gemini CLI and any MCP client.</p>
 
         <div class="compare">
           <figure>
@@ -265,37 +267,53 @@ figcaption b { color: var(--foreground); font-weight: 500; }
         </div>
 
         <div class="grid-2">
-          <a class="link-card" href="#install"><strong>Install</strong><span>Add the skill to Claude Code in one copy command.</span></a>
+          <a class="link-card" href="#install"><strong>Install</strong><span>One command for your tool of choice.</span></a>
           <a class="link-card" href="#demo-marketing"><strong>See the demos</strong><span>Three before-and-after ports, with measurements.</span></a>
         </div>
       </section>
 
       <section id="install">
         <h2>Install</h2>
-        <p>You need <a href="https://claude.com/claude-code">Claude Code</a> and Node.js 18 or later for the helper scripts. Copy the <code>deslop</code> folder into your skills directory.</p>
-
-        <h3>macOS and Linux</h3>
+        <p>deslop uses the open Agent Skills format, a folder with a <code>SKILL.md</code>, so the same folder works across tools. The installer copies it to wherever your tool looks and adds any pointer file that tool needs. It needs Node.js 18 or later and works the same on macOS, Linux and Windows.</p>
         <div class="code"><div class="code-head"><span>bash</span><button class="copy">Copy</button></div><pre><code>git clone https://github.com/ERROR-SIDDH/deslop.git
-mkdir -p ~/.claude/skills
-cp -r deslop/deslop ~/.claude/skills/deslop</code></pre></div>
-
-        <h3>Windows</h3>
-        <div class="code"><div class="code-head"><span>PowerShell</span><button class="copy">Copy</button></div><pre><code>git clone https://github.com/ERROR-SIDDH/deslop.git
-New-Item -ItemType Directory -Force "$HOME\.claude\skills" | Out-Null
-Copy-Item -Recurse deslop\deslop "$HOME\.claude\skills\deslop"</code></pre></div>
-
-        <h3>For one project only</h3>
-        <p>Copy the folder to <code>.claude/skills/deslop</code> inside that repository and commit it. Everyone on the team gets the skill.</p>
-
+node deslop/deslop/scripts/install.mjs &lt;tool&gt; --global             <span class="tok-c"># user-wide: claude, codex, antigravity</span>
+node deslop/deslop/scripts/install.mjs &lt;tool&gt; --project ./my-app   <span class="tok-c"># one repo: any tool</span></code></pre></div>
+        <p>A project install can be committed, so everyone on the team gets the skill. Re-running the installer updates it in place and never duplicates blocks in shared files like <code>AGENTS.md</code>.</p>
         <div class="callout">
           <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>
-          <p>Skills load when a session starts. Open a new Claude Code session, then type <code>/deslop</code> to confirm it is there. To update, <code>git pull</code> and copy the folder again.</p>
+          <p>Most tools load skills when a session starts. After installing, open a new session or reload skills, then confirm the skill is listed.</p>
         </div>
+      </section>
+
+      <section id="tool-setup">
+        <h2>Tool setup</h2>
+        <p>Pick your tool. The <code>&lt;tool&gt;</code> value is what you pass to the installer.</p>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Tool</th><th>&lt;tool&gt;</th><th>Installs to</th><th>Invoke with</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Claude Code</strong></td><td><code>claude</code></td><td><code>~/.claude/skills/</code> or <code>.claude/skills/</code></td><td><code>/deslop</code></td></tr>
+            <tr><td><strong>OpenAI Codex</strong></td><td><code>codex</code></td><td><code>~/.agents/skills/</code> or <code>.agents/skills/</code></td><td><code>$deslop</code>, or pick it from <code>/skills</code></td></tr>
+            <tr><td><strong>Google Antigravity</strong></td><td><code>antigravity</code></td><td><code>~/.gemini/config/skills/</code> or <code>.agents/skills/</code></td><td><code>/deslop</code></td></tr>
+            <tr><td><strong>Cursor</strong></td><td><code>cursor</code></td><td><code>.agents/skills/</code> plus <code>.cursor/rules/deslop.mdc</code></td><td>Ask the agent to “deslop” a page</td></tr>
+            <tr><td><strong>Windsurf</strong></td><td><code>windsurf</code></td><td><code>.agents/skills/</code> plus <code>.windsurf/rules/deslop.md</code></td><td>Ask Cascade to “deslop” a page</td></tr>
+            <tr><td><strong>GitHub Copilot</strong></td><td><code>copilot</code></td><td><code>.agents/skills/</code> plus <code>.github/prompts/deslop.prompt.md</code></td><td><code>/deslop</code> in VS Code chat</td></tr>
+            <tr><td><strong>Gemini CLI</strong></td><td><code>gemini</code></td><td><code>.agents/skills/</code> plus a block in <code>GEMINI.md</code></td><td>Ask it to “deslop” a page</td></tr>
+            <tr><td><strong>AGENTS.md tools</strong></td><td><code>agents</code></td><td><code>.agents/skills/</code> plus a block in <code>AGENTS.md</code></td><td>Ask it to “deslop” a page</td></tr>
+          </tbody>
+        </table></div>
+
+        <h3>Lovable</h3>
+        <p>Lovable reads the same <code>SKILL.md</code> format. Go to <strong>Settings → Skills → Add → Import from GitHub</strong> and paste the skill folder's URL. Import needs the repository to be public. Otherwise, zip the <code>deslop</code> folder and choose <strong>Upload ZIP</strong>.</p>
+        <div class="code"><div class="code-head"><span>Skill URL</span><button class="copy">Copy</button></div><pre><code>https://github.com/ERROR-SIDDH/deslop/tree/main/deslop</code></pre></div>
+        <p>Lovable can't run the Node scripts. The skill detects this and works from its written rules and checklists instead.</p>
+
+        <h3>Bolt, v0 and project knowledge</h3>
+        <p>Builders that take pasted instructions get a compact, always-on version of the rules: <a href="../deslop/adapters/compact-rules.md"><code>deslop/adapters/compact-rules.md</code></a>. It is under 7,000 characters, which fits Lovable's 10,000-character knowledge limit.</p>
       </section>
 
       <section id="usage">
         <h2>Usage</h2>
-        <p>Open Claude Code in the project you want to fix. Run <code>/deslop</code>, or describe the problem. The skill also triggers on phrases like “this looks AI-generated”, “too purple” or “make it look enterprise”.</p>
+        <p>Open your agent in the project you want to fix. Invoke the skill as shown in <a href="#tool-setup">Tool setup</a>, or just describe the problem. The skill also triggers on phrases like “this looks AI-generated”, “too purple” or “make it look enterprise”.</p>
 
         <div class="code"><div class="code-head"><span>Prompt</span><button class="copy">Copy</button></div><pre><code>/deslop our landing page in src/app/page.tsx.
 Brand colour is #6366F1 and must stay. We sell to enterprise IT teams.</code></pre></div>
@@ -404,6 +422,45 @@ node deslop/scripts/derive-palette.mjs "#2563EB" A --format=hsl</code></pre></di
         </table></div>
       </section>
 
+      <section id="mcp">
+        <h2>MCP server</h2>
+        <p><code>mcp-server.mjs</code> exposes the scripts to any MCP client over stdio. It has no dependencies, and it is read-only apart from scanning the paths you pass it.</p>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Tool</th><th>What it returns</th></tr></thead>
+          <tbody>
+            <tr><td><code>deslop_scan</code></td><td>The ranked tell report for a file or directory, or raw hits as JSON</td></tr>
+            <tr><td><code>deslop_palette</code></td><td>Light and dark tokens from a brand colour and style, with a contrast report</td></tr>
+            <tr><td><code>deslop_audit_script</code></td><td>The browser audit script, to run in a page</td></tr>
+            <tr><td><code>deslop_reference</code></td><td>One reference: workflow, catalog, system, color, components or copy</td></tr>
+            <tr><td><code>deslop</code> (prompt)</td><td>The full workflow, for clients that support MCP prompts</td></tr>
+          </tbody>
+        </table></div>
+        <p>The installer prints a ready-to-paste config with the absolute path filled in:</p>
+        <div class="code"><div class="code-head"><span>bash</span><button class="copy">Copy</button></div><pre><code>node deslop/deslop/scripts/install.mjs mcp &lt;client&gt;
+<span class="tok-c"># clients: claude, codex, antigravity, cursor, windsurf, vscode, gemini, claude-desktop</span></code></pre></div>
+        <h3>Config by client</h3>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Client</th><th>Where the config goes</th></tr></thead>
+          <tbody>
+            <tr><td>Claude Code</td><td><code>claude mcp add deslop -- node /path/to/mcp-server.mjs</code></td></tr>
+            <tr><td>Codex</td><td><code>~/.codex/config.toml</code> under <code>[mcp_servers.deslop]</code></td></tr>
+            <tr><td>Antigravity</td><td><code>~/.gemini/config/mcp_config.json</code>, or MCP Servers → Manage → View raw config</td></tr>
+            <tr><td>Cursor</td><td><code>.cursor/mcp.json</code> or <code>~/.cursor/mcp.json</code></td></tr>
+            <tr><td>Windsurf</td><td><code>~/.codeium/windsurf/mcp_config.json</code></td></tr>
+            <tr><td>VS Code / Copilot</td><td><code>.vscode/mcp.json</code> (key <code>servers</code>)</td></tr>
+            <tr><td>Gemini CLI</td><td><code>~/.gemini/settings.json</code> (key <code>mcpServers</code>)</td></tr>
+          </tbody>
+        </table></div>
+        <div class="code"><div class="code-head"><span>Codex · config.toml</span><button class="copy">Copy</button></div><pre><code>[mcp_servers.deslop]
+command = "node"
+args = ["/path/to/deslop/scripts/mcp-server.mjs"]</code></pre></div>
+        <div class="code"><div class="code-head"><span>Antigravity, Cursor, Windsurf, Gemini · JSON</span><button class="copy">Copy</button></div><pre><code>{
+  "mcpServers": {
+    "deslop": { "command": "node", "args": ["/path/to/deslop/scripts/mcp-server.mjs"] }
+  }
+}</code></pre></div>
+      </section>
+
       <section id="demo-marketing">
         <h2>Demo: marketing page</h2>
         <p>FlowPilot, a fictional workflow-automation SaaS with no brand constraint. The agent chose <strong>Style B</strong>.</p>
@@ -414,8 +471,8 @@ node deslop/scripts/derive-palette.mjs "#2563EB" A --format=hsl</code></pre></di
           <div class="stat"><div class="label">Hue families</div><div class="value">0</div><div class="delta">from 4</div></div>
         </div>
         <div class="compare">
-          <figure><div class="shot"><img src="./screenshots/marketing-before-full.png" alt="FlowPilot before, full page" loading="lazy"></div><figcaption><b>Before.</b> Gradient headline, glow CTA, glass cards, fake stats. <a href="examples/slop.html">Open page</a></figcaption></figure>
-          <figure><div class="shot"><img src="./screenshots/marketing-after-full.png" alt="FlowPilot after, full page" loading="lazy"></div><figcaption><b>After.</b> Neutral palette, product figure, features as a list. <a href="examples/deslopped.html">Open page</a></figcaption></figure>
+          <figure><div class="shot"><img src="./screenshots/marketing-before-full.png" alt="FlowPilot before, full page" loading="lazy"></div><figcaption><b>Before.</b> Gradient headline, glow CTA, glass cards, fake stats. <a href="../examples/slop.html">Open page</a></figcaption></figure>
+          <figure><div class="shot"><img src="./screenshots/marketing-after-full.png" alt="FlowPilot after, full page" loading="lazy"></div><figcaption><b>After.</b> Neutral palette, product figure, features as a list. <a href="../examples/deslopped.html">Open page</a></figcaption></figure>
         </div>
       </section>
 
@@ -428,7 +485,7 @@ node deslop/scripts/derive-palette.mjs "#2563EB" A --format=hsl</code></pre></di
           <div class="stat"><div class="label">Accent area</div><div class="value">0.9%</div><div class="delta">from 13.2%</div></div>
           <div class="stat"><div class="label">Hue families</div><div class="value">1</div><div class="delta">the brand purple</div></div>
         </div>
-        <figure class="figure-wide"><div class="shot"><img src="./screenshots/brand-after-hero.png" alt="FlowPilot with brand purple kept, Enterprise style" loading="lazy"></div><figcaption><b>After.</b> IBM Plex at weight 300, 4px corners, “Contact sales” for a procurement buyer. <a href="examples/deslopped-brand.html">Open page</a></figcaption></figure>
+        <figure class="figure-wide"><div class="shot"><img src="./screenshots/brand-after-hero.png" alt="FlowPilot with brand purple kept, Enterprise style" loading="lazy"></div><figcaption><b>After.</b> IBM Plex at weight 300, 4px corners, “Contact sales” for a procurement buyer. <a href="../examples/deslopped-brand.html">Open page</a></figcaption></figure>
       </section>
 
       <section id="demo-app">
@@ -440,9 +497,9 @@ node deslop/scripts/derive-palette.mjs "#2563EB" A --format=hsl</code></pre></di
           <div class="stat"><div class="label">Accent area</div><div class="value">0%</div><div class="delta">from 50.9%</div></div>
           <div class="stat"><div class="label">Distinct radii</div><div class="value">3</div><div class="delta">one scale</div></div>
         </div>
-        <figure class="figure-wide"><div class="shot"><img src="./screenshots/app-before.png" alt="InvoiceAI dashboard before: gradient sidebar, glass stat cards, gradient pills" loading="lazy"></div><figcaption><b>Before.</b> Gradient sidebar, emoji nav, glass stat cards, gradient status pills. <a href="examples/slop-app.html">Open page</a></figcaption></figure>
+        <figure class="figure-wide"><div class="shot"><img src="./screenshots/app-before.png" alt="InvoiceAI dashboard before: gradient sidebar, glass stat cards, gradient pills" loading="lazy"></div><figcaption><b>Before.</b> Gradient sidebar, emoji nav, glass stat cards, gradient status pills. <a href="../examples/slop-app.html">Open page</a></figcaption></figure>
         <div class="compare">
-          <figure><div class="shot"><img src="./screenshots/app-v2-after-light.png" alt="InvoiceAI after, light mode" loading="lazy"></div><figcaption><b>After, light.</b> <a href="examples/deslopped-app-v2.html">Open page</a></figcaption></figure>
+          <figure><div class="shot"><img src="./screenshots/app-v2-after-light.png" alt="InvoiceAI after, light mode" loading="lazy"></div><figcaption><b>After, light.</b> <a href="../examples/deslopped-app-v2.html">Open page</a></figcaption></figure>
           <figure><div class="shot"><img src="./screenshots/app-v2-after-dark.png" alt="InvoiceAI after, dark mode" loading="lazy"></div><figcaption><b>After, dark.</b> Follows the system theme with CSS only.</figcaption></figure>
         </div>
         <div class="table-wrap"><table>
@@ -462,6 +519,8 @@ node deslop/scripts/derive-palette.mjs "#2563EB" A --format=hsl</code></pre></di
         <h2>Repository layout</h2>
         <div class="code"><div class="code-head"><span>Tree</span></div><pre><code>deslop/                     <span class="tok-c">the skill: copy this folder</span>
 ├── SKILL.md                <span class="tok-c">workflow, decisions, review gate</span>
+├── adapters/
+│   └── compact-rules.md    <span class="tok-c">paste-in rules for Bolt, v0, Lovable knowledge</span>
 ├── references/
 │   ├── slop-catalog.md     <span class="tok-c">the 24 tells, with measurements</span>
 │   ├── mnc-system.md       <span class="tok-c">styles, type, spacing, motion</span>
@@ -471,7 +530,9 @@ node deslop/scripts/derive-palette.mjs "#2563EB" A --format=hsl</code></pre></di
 └── scripts/
     ├── slop-scan.mjs       <span class="tok-c">static scanner</span>
     ├── derive-palette.mjs  <span class="tok-c">OKLCH palette generator</span>
-    └── slop-audit.js       <span class="tok-c">live browser audit</span>
+    ├── slop-audit.js       <span class="tok-c">live browser audit</span>
+    ├── mcp-server.mjs      <span class="tok-c">stdio MCP server</span>
+    └── install.mjs         <span class="tok-c">cross-tool installer</span>
 examples/                   <span class="tok-c">before and after demo pages</span>
 docs/screenshots/           <span class="tok-c">images used here</span></code></pre></div>
       </section>
@@ -482,7 +543,13 @@ docs/screenshots/           <span class="tok-c">images used here</span></code></
           <li><strong>Field study.</strong> Live Lovable and v0 pages were measured in a real browser, with Linear and Stripe as calibration.</li>
           <li><strong>Reference research.</strong> Design tokens and rules from IBM Carbon, GitHub Primer, Vercel Geist, Linear, Atlassian and Stripe.</li>
           <li><strong>Blind ports.</strong> Four fresh agents, each given only the skill and an AI-made page. Over 30 ambiguities they reported were fixed between runs.</li>
-          <li><strong>Self-tests.</strong> Both Node scripts ship with <code>--self-test</code>. The generator checks every contrast pair for eight brand colours across all three styles.</li>
+          <li><strong>Self-tests.</strong> All four Node scripts ship with <code>--self-test</code>.
+            <ul>
+              <li><strong>Generator:</strong> checks every contrast pair for eight brand colours across all three styles.</li>
+              <li><strong>MCP server:</strong> runs a real stdio handshake and calls every tool.</li>
+              <li><strong>Installer:</strong> installs into all eight tools twice, to prove it is idempotent, and checks the <code>SKILL.md</code> frontmatter limits.</li>
+            </ul>
+          </li>
         </ul>
       </section>
 
@@ -492,6 +559,8 @@ docs/screenshots/           <span class="tok-c">images used here</span></code></
           <li>The scores are heuristics, calibrated on five AI sites and two premium sites. The review gate is the real bar.</li>
           <li>The scanner reads Tailwind, CSS, HTML and JSX. It cannot judge hierarchy or whether a claim is true.</li>
           <li>Screenshots and the live audit need a browser. Without one, the skill relies on the scan and the review gate.</li>
+          <li>Tools that can't run code, such as Lovable, Bolt and v0, use the written rules only, with no scanner or palette generator.</li>
+          <li>Tool folder conventions change. The paths here were checked against each tool's documentation in November 2026.</li>
           <li>The demo products are fictional.</li>
         </ul>
       </section>
